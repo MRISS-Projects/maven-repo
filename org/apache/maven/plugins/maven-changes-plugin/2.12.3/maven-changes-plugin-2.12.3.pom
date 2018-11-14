@@ -612,6 +612,7 @@
                                     <checkinComment>Publishing site for version ${project.version}</checkinComment>
                                     <pubScmUrl>scm:git:https://github.com/MRISS-Projects/maven-changes-plugin</pubScmUrl>
                                     <content>${project.build.directory}/site-deploy</content>
+                                    <checkoutDirectory>${project.build.directory}/site-deploy-checkout</checkoutDirectory>
                                 </configuration>
                             </execution>
                             <execution>
@@ -625,6 +626,7 @@
                                     <checkinComment>Publishing artifact for version ${project.version}</checkinComment>
                                     <pubScmUrl>scm:git:https://github.com/MRISS-Projects/maven-repo</pubScmUrl>
                                     <content>${project.build.directory}/maven-repo</content>
+                                    <checkoutDirectory>${project.build.directory}/artifact-deploy-checkout</checkoutDirectory>
                                 </configuration>
                             </execution>
                         </executions>
