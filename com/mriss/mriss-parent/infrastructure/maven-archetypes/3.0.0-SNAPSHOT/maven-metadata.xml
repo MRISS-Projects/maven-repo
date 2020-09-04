@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata modelVersion="1.1.0">
+  <groupId>com.mriss.mriss-parent.infrastructure</groupId>
+  <artifactId>maven-archetypes</artifactId>
+  <version>3.0.0-SNAPSHOT</version>
+  <versioning>
+    <snapshot>
+      <timestamp>20200904.030505</timestamp>
+      <buildNumber>1</buildNumber>
+    </snapshot>
+    <lastUpdated>20200904030505</lastUpdated>
+    <snapshotVersions>
+      <snapshotVersion>
+        <extension>pom</extension>
+        <value>3.0.0-20200904.030505-1</value>
+        <updated>20200904030505</updated>
+      </snapshotVersion>
+    </snapshotVersions>
+  </versioning>
+</metadata>
