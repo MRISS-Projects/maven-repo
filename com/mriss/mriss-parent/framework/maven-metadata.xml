@@ -3,10 +3,9 @@
   <groupId>com.mriss.mriss-parent</groupId>
   <artifactId>framework</artifactId>
   <versioning>
-    <release>3.3.0</release>
     <versions>
-      <version>3.3.0</version>
+      <version>3.4.0-SNAPSHOT</version>
     </versions>
-    <lastUpdated>20200913000746</lastUpdated>
+    <lastUpdated>20200913001106</lastUpdated>
   </versioning>
 </metadata>
