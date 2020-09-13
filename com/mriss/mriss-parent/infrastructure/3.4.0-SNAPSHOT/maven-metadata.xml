@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata modelVersion="1.1.0">
+  <groupId>com.mriss.mriss-parent</groupId>
+  <artifactId>infrastructure</artifactId>
+  <version>3.4.0-SNAPSHOT</version>
+  <versioning>
+    <snapshot>
+      <timestamp>20200913.001102</timestamp>
+      <buildNumber>1</buildNumber>
+    </snapshot>
+    <lastUpdated>20200913001102</lastUpdated>
+    <snapshotVersions>
+      <snapshotVersion>
+        <extension>pom</extension>
+        <value>3.4.0-20200913.001102-1</value>
+        <updated>20200913001102</updated>
+      </snapshotVersion>
+    </snapshotVersions>
+  </versioning>
+</metadata>
