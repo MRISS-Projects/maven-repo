@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>com.mriss.mriss-parent.products.mail-processor-service.card-statement-processor.backend</groupId>
+  <artifactId>service</artifactId>
+  <versioning>
+    <versions>
+      <version>0.1.0-SNAPSHOT</version>
+    </versions>
+    <lastUpdated>20200915011241</lastUpdated>
+  </versioning>
+</metadata>
