@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>com.mriss.mriss-parent.products</groupId>
+  <artifactId>mail-processor-service</artifactId>
+  <versioning>
+    <versions>
+      <version>0.1.0-SNAPSHOT</version>
+    </versions>
+    <lastUpdated>20200915010921</lastUpdated>
+  </versioning>
+</metadata>
