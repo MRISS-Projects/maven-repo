@@ -1,0 +1,65 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- The Basics -->
+    <groupId>com.mriss.mriss-parent.products.mail-processor-service.card-statement-processor.backend</groupId>
+    <artifactId>service</artifactId>
+    <version>0.1.1</version>
+    <packaging>jar</packaging>
+    <!-- <dependencies> -->
+    <!-- </dependencies> -->
+    <parent>
+        <groupId>com.mriss.mriss-parent.products.mail-processor-service.card-statement-processor</groupId>
+        <artifactId>backend</artifactId>
+        <version>0.1.1</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <!-- <dependencyManagement> -->
+    <!-- </dependencyManagement> -->
+<!--     <modules> -->
+<!--     </modules> -->
+<!--     <properties> -->
+<!--     </properties> -->
+
+    <!-- Build Settings -->
+    <!-- <build> -->
+    <!-- </build> -->
+    <!-- <reporting> -->
+    <!-- </reporting> -->
+
+    <!-- More Project Information -->
+    <name>Card Statement Processor Service</name>
+    <description>
+        Card statement processor service. It receives objects from app, proceed calculation and put at FireStore.
+    </description>
+<!--     <url></url> -->
+<!--     <inceptionYear></inceptionYear> -->
+<!--     <licenses> -->
+<!--     </licenses> -->
+<!--     <organization> -->
+<!--     </organization> -->
+<!--     <developers> -->
+<!--     </developers> -->
+<!--     <contributors> -->
+<!--     </contributors> -->
+
+    <!-- Environment Settings -->
+<!--     <issueManagement> -->
+<!--     </issueManagement> -->
+<!--     <ciManagement> -->
+<!--     </ciManagement> -->
+<!--     <mailingLists> -->
+<!--     </mailingLists> -->
+<!--     <scm> -->
+<!--     </scm> -->
+<!--     <prerequisites> -->
+<!--     </prerequisites> -->
+<!--     <repositories> -->
+<!--     </repositories> -->
+<!--     <pluginRepositories> -->
+<!--     </pluginRepositories> -->
+<!--     <distributionManagement> -->
+<!--     </distributionManagement> -->
+<!--     <profiles> -->
+<!--     </profiles> -->
+</project>
