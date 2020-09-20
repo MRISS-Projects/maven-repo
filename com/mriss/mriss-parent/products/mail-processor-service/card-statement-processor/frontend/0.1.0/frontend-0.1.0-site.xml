@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<project name="${project.name}">
+    <version position="right" />
+    <publishDate position="right"
+        format="yyyy-MM-dd - hh:mm:ss" />
+    <skin>
+        <groupId>${skin.groupId}</groupId>
+        <artifactId>${skin.artifactId}</artifactId>
+        <version>${skin.version}</version>
+    </skin>
+    <body>
+        <breadcrumbs>
+            <item name="Wiki" href="https://github.com/MRISS-Projects/mail-processor-service/wiki" />
+        </breadcrumbs>
+        <menu ref="parent" />
+        <menu ref="modules" />
+        <menu ref="reports" />
+    </body>
+</project>
