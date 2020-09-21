@@ -3,10 +3,9 @@
   <groupId>com.mriss.mriss-parent.products.mail-processor-service.card-statement-processor</groupId>
   <artifactId>frontend</artifactId>
   <versioning>
-    <release>0.1.1</release>
     <versions>
-      <version>0.1.1</version>
+      <version>0.2.0-SNAPSHOT</version>
     </versions>
-    <lastUpdated>20200920070737</lastUpdated>
+    <lastUpdated>20200921001520</lastUpdated>
   </versioning>
 </metadata>
