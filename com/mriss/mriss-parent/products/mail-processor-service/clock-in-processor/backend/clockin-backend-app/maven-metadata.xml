@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>com.mriss.mriss-parent.products.mail-processor-service.clock-in-processor.backend</groupId>
+  <artifactId>clockin-backend-app</artifactId>
+  <versioning>
+    <versions>
+      <version>0.2.0-SNAPSHOT</version>
+    </versions>
+    <lastUpdated>20200923042333</lastUpdated>
+  </versioning>
+</metadata>
