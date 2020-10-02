@@ -5,44 +5,44 @@
   <version>2.0.0-SNAPSHOT</version>
   <versioning>
     <snapshot>
-      <timestamp>20201002.194756</timestamp>
+      <timestamp>20201002.195528</timestamp>
       <buildNumber>1</buildNumber>
     </snapshot>
-    <lastUpdated>20201002194756</lastUpdated>
+    <lastUpdated>20201002195528</lastUpdated>
     <snapshotVersions>
       <snapshotVersion>
         <extension>jar</extension>
-        <value>2.0.0-20201002.194756-1</value>
-        <updated>20201002194756</updated>
+        <value>2.0.0-20201002.195528-1</value>
+        <updated>20201002195528</updated>
       </snapshotVersion>
       <snapshotVersion>
         <extension>pom</extension>
-        <value>2.0.0-20201002.194756-1</value>
-        <updated>20201002194756</updated>
+        <value>2.0.0-20201002.195528-1</value>
+        <updated>20201002195528</updated>
       </snapshotVersion>
       <snapshotVersion>
         <classifier>img_2</classifier>
         <extension>jpg</extension>
-        <value>2.0.0-20201002.194756-1</value>
-        <updated>20201002194756</updated>
+        <value>2.0.0-20201002.195528-1</value>
+        <updated>20201002195528</updated>
       </snapshotVersion>
       <snapshotVersion>
         <classifier>index</classifier>
         <extension>jpg</extension>
-        <value>2.0.0-20201002.194756-1</value>
-        <updated>20201002194756</updated>
+        <value>2.0.0-20201002.195528-1</value>
+        <updated>20201002195528</updated>
       </snapshotVersion>
       <snapshotVersion>
         <classifier>package</classifier>
         <extension>jpg</extension>
-        <value>2.0.0-20201002.194756-1</value>
-        <updated>20201002194756</updated>
+        <value>2.0.0-20201002.195528-1</value>
+        <updated>20201002195528</updated>
       </snapshotVersion>
       <snapshotVersion>
         <classifier>task-list</classifier>
         <extension>jpg</extension>
-        <value>2.0.0-20201002.194756-1</value>
-        <updated>20201002194756</updated>
+        <value>2.0.0-20201002.195528-1</value>
+        <updated>20201002195528</updated>
       </snapshotVersion>
     </snapshotVersions>
   </versioning>
