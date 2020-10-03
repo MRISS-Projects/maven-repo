@@ -3,11 +3,10 @@
   <groupId>org.apache.maven.plugins</groupId>
   <artifactId>maven-changes-plugin</artifactId>
   <versioning>
-    <latest>2.12.5</latest>
-    <release>2.12.5</release>
+    <latest>2.12.6-SNAPSHOT</latest>
     <versions>
-      <version>2.12.5</version>
+      <version>2.12.6-SNAPSHOT</version>
     </versions>
-    <lastUpdated>20190319023452</lastUpdated>
+    <lastUpdated>20201003034030</lastUpdated>
   </versioning>
 </metadata>

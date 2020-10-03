@@ -1,0 +1,828 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements. See the NOTICE file 
+    distributed with this work for additional information regarding copyright ownership. The ASF licenses this file to you under 
+    the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may 
+    obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to 
+    in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF 
+    ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under 
+    the License. -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>maven-plugins</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
+        <version>30</version>
+        <relativePath>../../pom/maven/maven-plugins/pom.xml</relativePath>
+    </parent>
+
+    <artifactId>maven-changes-plugin</artifactId>
+    <version>2.12.6-SNAPSHOT</version>
+    <packaging>maven-plugin</packaging>
+
+    <name>Apache Maven Changes Plugin</name>
+    <description>Creates a release history for inclusion into the site and assists in generating an announcement mail.</description>
+
+    <contributors>
+        <contributor>
+            <name>Justin Edelson</name>
+        </contributor>
+        <contributor>
+            <name>Bryan Baugher</name>
+        </contributor>
+        <contributor>
+            <name>Markku Saarela</name>
+        </contributor>
+    </contributors>
+
+    <prerequisites>
+        <maven>${mavenVersion}</maven>
+    </prerequisites>
+
+    <scm>
+        <connection>scm:git:https://gitbox.apache.org/repos/asf/maven-changes-plugin.git</connection>
+        <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-changes-plugin.git</developerConnection>
+        <url>https://github.com/apache/maven-changes-plugin/tree/${project.scm.tag}</url>
+        <tag>HEAD</tag>
+    </scm>
+    <issueManagement>
+        <system>jira</system>
+        <url>https://issues.apache.org/jira/browse/MCHANGES</url>
+    </issueManagement>
+    <ciManagement>
+        <system>Jenkins</system>
+        <url>https://builds.apache.org/job/maven-box/job/maven-changes-plugin/</url>
+    </ciManagement>
+    <distributionManagement>
+        <site>
+            <id>github.website</id>
+            <url>file://${project.build.directory}/site-deploy</url>
+        </site>
+        <repository>
+            <id>releases</id>
+            <name>Main Releases</name>
+            <url>${deploymentUrl}</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <name>Snapshots</name>
+            <url>${deploymentUrl}</url>
+        </snapshotRepository>
+    </distributionManagement>
+    <properties>
+        <doxiaVersion>1.4</doxiaVersion>
+        <doxiaSitetoolsVersion>1.4</doxiaSitetoolsVersion>
+        <mavenVersion>3.0</mavenVersion>
+        <sitePluginVersion>3.3</sitePluginVersion>
+        <wagonVersion>1.0-beta-6</wagonVersion>
+        <!-- Set nexus server as a system property at command line -->
+        <deploymentUrl>${nexus.server}/content/repositories/releases/</deploymentUrl>
+    </properties>
+
+    <dependencies>
+        <!-- maven -->
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-core</artifactId>
+            <version>${mavenVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-artifact</artifactId>
+            <version>${mavenVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-model</artifactId>
+            <version>${mavenVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-plugin-api</artifactId>
+            <version>${mavenVersion}</version>
+        </dependency>
+        <!-- <dependency> -->
+        <!-- <groupId>org.apache.maven</groupId> -->
+        <!-- <artifactId>maven-project</artifactId> -->
+        <!-- <version>${mavenVersion}</version> -->
+        <!-- </dependency> -->
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-settings</artifactId>
+            <version>${mavenVersion}</version>
+        </dependency>
+        <!-- dependencies to annotations -->
+        <dependency>
+            <groupId>org.apache.maven.plugin-tools</groupId>
+            <artifactId>maven-plugin-annotations</artifactId>
+        </dependency>
+
+        <!-- shared -->
+        <dependency>
+            <groupId>org.apache.maven.reporting</groupId>
+            <artifactId>maven-reporting-api</artifactId>
+            <version>3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.reporting</groupId>
+            <artifactId>maven-reporting-impl</artifactId>
+            <version>2.3</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.maven</groupId>
+                    <artifactId>maven-project</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.shared</groupId>
+            <artifactId>maven-filtering</artifactId>
+            <version>3.1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.shared</groupId>
+            <artifactId>maven-artifact-transfer</artifactId>
+            <version>0.9.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-interpolation</artifactId>
+            <version>1.24</version>
+        </dependency>
+
+        <!-- wagon -->
+        <dependency>
+            <groupId>org.apache.maven.wagon</groupId>
+            <artifactId>wagon-provider-api</artifactId>
+            <version>${wagonVersion}</version>
+        </dependency>
+
+        <!-- plexus -->
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-mail-sender-api</artifactId>
+            <version>1.0-alpha-7</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.codehaus.plexus</groupId>
+                    <artifactId>plexus-component-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- javamail to parse an email address -->
+        <dependency>
+            <groupId>org.apache.geronimo.javamail</groupId>
+            <artifactId>geronimo-javamail_1.4_provider</artifactId>
+            <version>1.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.geronimo.specs</groupId>
+            <artifactId>geronimo-javamail_1.4_spec</artifactId>
+            <version>1.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.geronimo.javamail</groupId>
+            <artifactId>geronimo-javamail_1.4_mail</artifactId>
+            <version>1.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-mail-sender-javamail</artifactId>
+            <version>1.0-alpha-7</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.codehaus.plexus</groupId>
+                    <artifactId>plexus-component-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-mail-sender-simple</artifactId>
+            <version>1.0-alpha-7</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.codehaus.plexus</groupId>
+                    <artifactId>plexus-component-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-i18n</artifactId>
+            <version>1.0-beta-7</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.codehaus.plexus</groupId>
+                    <artifactId>plexus-container-default</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.plexus</groupId>
+                    <artifactId>plexus-component-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-utils</artifactId>
+            <version>3.0.24</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-velocity</artifactId>
+            <version>1.1.8</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.codehaus.plexus</groupId>
+                    <artifactId>plexus-container-default</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.plexus</groupId>
+                    <artifactId>plexus-component-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>velocity</groupId>
+                    <artifactId>velocity</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- commons -->
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-httpclient</groupId>
+            <artifactId>commons-httpclient</artifactId>
+            <version>3.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.5</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.6</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+
+        <!-- doxia -->
+        <dependency>
+            <groupId>org.apache.maven.doxia</groupId>
+            <artifactId>doxia-core</artifactId>
+            <version>${doxiaVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.doxia</groupId>
+            <artifactId>doxia-module-xhtml</artifactId>
+            <version>${doxiaVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.doxia</groupId>
+            <artifactId>doxia-sink-api</artifactId>
+            <version>${doxiaVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.doxia</groupId>
+            <artifactId>doxia-decoration-model</artifactId>
+            <version>${doxiaSitetoolsVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.doxia</groupId>
+            <artifactId>doxia-site-renderer</artifactId>
+            <version>${doxiaSitetoolsVersion}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.codehaus.plexus</groupId>
+                    <artifactId>plexus-component-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.plexus</groupId>
+                    <artifactId>plexus-container-default</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- rest client for jira -->
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-frontend-jaxrs</artifactId>
+            <version>2.6.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.1.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.velocity</groupId>
+            <artifactId>velocity</artifactId>
+            <version>1.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.velocity</groupId>
+            <artifactId>velocity-tools</artifactId>
+            <version>2.0</version>
+        </dependency>
+
+        <!-- schema validation dependencies : jaxp 1.3 is not included with jdk 1.4 (start with 1.5) -->
+        <dependency>
+            <groupId>xml-apis</groupId>
+            <artifactId>xml-apis</artifactId>
+            <version>1.3.04</version>
+        </dependency>
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <version>2.9.1</version>
+        </dependency>
+
+        <!-- trac dependencies -->
+        <dependency>
+            <groupId>org.apache.xmlrpc</groupId>
+            <artifactId>xmlrpc-client</artifactId>
+            <version>3.0</version>
+        </dependency>
+
+        <!-- github dependencies -->
+        <dependency>
+            <groupId>org.eclipse.mylyn.github</groupId>
+            <artifactId>org.eclipse.egit.github.core</artifactId>
+            <version>2.1.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>4.1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.1.2</version>
+        </dependency>
+
+        <!-- for rss feed generation -->
+        <dependency>
+            <groupId>rome</groupId>
+            <artifactId>rome</artifactId>
+            <version>1.0</version>
+        </dependency>
+
+        <!-- test dependencies -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>3.8.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.plugin-testing</groupId>
+            <artifactId>maven-plugin-testing-harness</artifactId>
+            <version>2.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-compat</artifactId>
+            <version>${mavenVersion}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.sonatype.aether</groupId>
+            <artifactId>aether-connector-wagon</artifactId>
+            <version>1.7</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.wagon</groupId>
+            <artifactId>wagon-http</artifactId>
+            <version>${wagonVersion}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>2.0.8-beta</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <repositories>
+        <repository>
+            <id>MRISS-Projects-maven-repo</id>
+            <url>https://raw.githubusercontent.com/MRISS-Projects/maven-repo/master</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>MRISS-Projects-maven-repo</id>
+            <url>https://raw.githubusercontent.com/MRISS-Projects/maven-repo/master</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </pluginRepository>
+    </pluginRepositories>
+
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.rat</groupId>
+                    <artifactId>apache-rat-plugin</artifactId>
+                    <configuration>
+                        <excludes combine.children="append">
+                            <!-- This file should not contain a license header as it represents real data downloaded from 
+                                a JIRA server. -->
+                            <exclude>src/test/resources/org/apache/maven/plugins/jira/unicode-jira-results.xml</exclude>
+                            <exclude>bin/.project</exclude>
+                            <exclude>bin/.settings/**</exclude>
+                            <exlcude>bin/target/**</exlcude>
+                            <exclude>.checkstyle</exclude>
+                            <exclude>eclipse/**</exclude>
+                            <exclude>**/*.md.html</exclude>
+                            <exclude>jacoco-badge/**</exclude>
+                        </excludes>
+                    </configuration>
+                </plugin>
+                <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven 
+                    build itself. -->
+                <plugin>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>com.google.code.maven-replacer-plugin</groupId>
+                                        <artifactId>replacer</artifactId>
+                                        <versionRange>[1.6.0,)</versionRange>
+                                        <goals>
+                                            <goal>replace</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <compilerArgument>-Xlint:all</compilerArgument>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.modello</groupId>
+                <artifactId>modello-maven-plugin</artifactId>
+                <version>1.0.1</version><!-- cannot upgrade because of MODELLO-254 -->
+                <executions>
+                    <execution>
+                        <id>site-docs</id>
+                        <phase>pre-site</phase>
+                        <goals>
+                            <goal>xdoc</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>standard</id>
+                        <goals>
+                            <goal>java</goal>
+                            <goal>xpp3-reader</goal>
+                            <goal>xpp3-writer</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>generate-xsd</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>xsd</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.outputDirectory}/META-INF/changes/xsd</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>generate-xsd-site</id>
+                        <phase>pre-site</phase>
+                        <goals>
+                            <goal>xsd</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.reporting.outputDirectory}/xsd</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+                <configuration>
+                    <useJava5>true</useJava5>
+                    <version>1.0.0</version>
+                    <models>
+                        <model>src/main/mdo/changes.mdo</model>
+                    </models>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.plexus</groupId>
+                <artifactId>plexus-component-metadata</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate-metadata</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.6</version>
+                <configuration>
+                    <excludes>
+                        <!-- Any exclusions you require, *.class -->
+                    </excludes>
+                </configuration>
+                <executions>
+                    <!-- Ask JaCoCo to generate a test report from surefire tests -->
+                    <execution>
+                        <id>prepare-code-coverage</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.sigpwned</groupId>
+                <artifactId>jacoco-badge-maven-plugin</artifactId>
+                <version>0.1.4</version>
+                <executions>
+                    <execution>
+                        <id>generate-jacoco-badge</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>badge</goal> <!-- Generate a badge from a unified JaCoCo report -->
+                        </goals>
+                        <configuration>
+                            <!-- What coverage level is considered passing? Optional, default 70. -->
+                            <passing>70</passing>
+                            <!-- Legal values: instruction, branch, line, method. Optional, default instruction. -->
+                            <metric>instruction</metric>
+                            <badgeFile>jacoco-badge/jacoco.svg</badgeFile>
+                            <reportFile>${project.reporting.outputDirectory}/jacoco/jacoco.csv</reportFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>run-its</id>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-invoker-plugin</artifactId>
+                            <configuration>
+                                <goals>
+                                    <goal>clean</goal>
+                                    <goal>site</goal>
+                                </goals>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+        <profile>
+            <id>reporting</id>
+            <reporting>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-changes-plugin</artifactId>
+                        <!-- Use the current version to generate sample with the last features/fixes of the plugin. It implies 
+                            that the current version is already deployed to generate the site. -->
+                        <version>${project.version}</version>
+                        <configuration>
+                            <!-- For Announcement -->
+                            <issueManagementSystems>
+                                <issueManagementSystem>JIRA</issueManagementSystem>
+                            </issueManagementSystems>
+                            <!-- For (sample) Changes-report -->
+                            <issueLinkTemplatePerSystem>
+                                <default>%URL%/%ISSUE%</default>
+                            </issueLinkTemplatePerSystem>
+                            <xmlPath>${basedir}/src/site/changes/sample-changes.xml</xmlPath>
+                            <!-- For JIRA-report -->
+                            <columnNames>Type,Key,Summary,Assignee,Status,Resolution,Created</columnNames>
+                            <maxEntries>200</maxEntries>
+                            <onlyCurrentVersion>true</onlyCurrentVersion>
+                            <resolutionIds>Fixed</resolutionIds>
+                            <sortColumnNames>Type,Key</sortColumnNames>
+                            <useJql>true</useJql>
+                        </configuration>
+                        <reportSets>
+                            <reportSet>
+                                <reports>
+                                    <report>changes-report</report>
+                                    <report>jira-report</report>
+                                </reports>
+                            </reportSet>
+                        </reportSets>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>l10n-maven-plugin</artifactId>
+                        <version>1.0-alpha-2</version>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/log4j.properties</exclude>
+                            </excludes>
+                            <locales>
+                                <locale>de</locale>
+                                <locale>fr</locale>
+                                <locale>pt_BR</locale>
+                                <locale>sv</locale>
+                            </locales>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </reporting>
+        </profile>
+        <profile>
+            <id>deployment</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <project.scm.id>github</project.scm.id>
+                <deploymentUrl>file://${project.build.directory}/maven-repo</deploymentUrl>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-scm-publish-plugin</artifactId>
+                        <version>3.0.0</version>
+                        <executions>
+                            <execution>
+                                <id>publish-site-to-github</id>
+                                <phase>site-deploy</phase>
+                                <goals>
+                                    <goal>publish-scm</goal>
+                                </goals>
+                                <configuration>
+                                    <serverId>github.com</serverId>
+                                    <scmBranch>gh-pages</scmBranch>
+                                    <checkinComment>Publishing site for version ${project.version}</checkinComment>
+                                    <pubScmUrl>scm:git:https://github.com/MRISS-Projects/maven-changes-plugin</pubScmUrl>
+                                    <content>${project.build.directory}/site-deploy</content>
+                                    <checkoutDirectory>${project.build.directory}/site-deploy-checkout</checkoutDirectory>
+                                    <skipDeletedFiles>true</skipDeletedFiles>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>publish-artifact-to-github</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>publish-scm</goal>
+                                </goals>
+                                <configuration>
+                                    <serverId>github.com</serverId>
+                                    <checkinComment>Publishing artifact for version ${project.version}</checkinComment>
+                                    <pubScmUrl>scm:git:https://github.com/MRISS-Projects/maven-repo</pubScmUrl>
+                                    <content>${project.build.directory}/maven-repo</content>
+                                    <checkoutDirectory>${project.build.directory}/artifact-deploy-checkout</checkoutDirectory>
+                                    <skipDeletedFiles>true</skipDeletedFiles>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-scm-plugin</artifactId>
+                        <version>1.9.5</version>
+                        <executions>
+                            <execution>
+                                <id>commit-jacoco-svg</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>checkin</goal>
+                                </goals>
+                                <configuration>
+                                    <basedir>${basedir}/jacoco-badge</basedir>
+                                    <includes>jacoco.svg</includes>
+                                    <message>[skip jenkins] Jacoco coverage badge</message>
+                                    <connectionUrl>scm:git:https://github.com/MRISS-Projects/maven-changes-plugin</connectionUrl>
+                                    <developerConnectionUrl>scm:git:https://github.com/MRISS-Projects/maven-changes-plugin</developerConnectionUrl>
+                                </configuration>
+                                <inherited>false</inherited>
+                            </execution>
+                            <execution>
+                                <id>commit-readme</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>checkin</goal>
+                                </goals>
+                                <configuration>
+                                    <basedir>${basedir}</basedir>
+                                    <includes>README.md</includes>
+                                    <message>[skip jenkins] Update README</message>
+                                    <connectionUrl>scm:git:https://github.com/MRISS-Projects/maven-changes-plugin</connectionUrl>
+                                    <developerConnectionUrl>scm:git:https://github.com/MRISS-Projects/maven-changes-plugin</developerConnectionUrl>
+                                </configuration>
+                                <inherited>false</inherited>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+            <reporting>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <reportSets>
+                            <reportSet>
+                                <reports>
+                                    <!-- select non-aggregate reports -->
+                                    <report>report</report>
+                                </reports>
+                            </reportSet>
+                        </reportSets>
+                    </plugin>
+                </plugins>
+            </reporting>
+        </profile>
+        <profile>
+            <id>update-coverage</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <project.scm.id>github</project.scm.id>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-scm-plugin</artifactId>
+                        <version>1.9.5</version>
+                        <executions>
+                            <execution>
+                                <id>commit-jacoco-svg</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>checkin</goal>
+                                </goals>
+                                <configuration>
+                                    <basedir>${basedir}/jacoco-badge</basedir>
+                                    <includes>jacoco.svg</includes>
+                                    <message>Jacoco coverage badge</message>
+                                    <connectionUrl>scm:git:https://github.com/MRISS-Projects/maven-changes-plugin</connectionUrl>
+                                    <developerConnectionUrl>scm:git:https://github.com/MRISS-Projects/maven-changes-plugin</developerConnectionUrl>
+                                </configuration>
+                                <inherited>false</inherited>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
