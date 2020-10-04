@@ -3,10 +3,9 @@
   <groupId>com.mriss.mriss-parent.infrastructure</groupId>
   <artifactId>maven-archetypes</artifactId>
   <versioning>
-    <release>3.6.1</release>
     <versions>
-      <version>3.6.1</version>
+      <version>3.7.0-SNAPSHOT</version>
     </versions>
-    <lastUpdated>20201004044116</lastUpdated>
+    <lastUpdated>20201004044656</lastUpdated>
   </versioning>
 </metadata>
