@@ -3,10 +3,9 @@
   <groupId>com.mriss.mriss-parent.infrastructure</groupId>
   <artifactId>maven-plugins</artifactId>
   <versioning>
-    <release>3.6.2</release>
     <versions>
-      <version>3.6.2</version>
+      <version>3.7.0-SNAPSHOT</version>
     </versions>
-    <lastUpdated>20201007191221</lastUpdated>
+    <lastUpdated>20201007191721</lastUpdated>
   </versioning>
 </metadata>
