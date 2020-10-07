@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2020 Marcelo Riss Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file 
+    except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 
+    Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS 
+    IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language 
+    governing permissions and limitations under the License. -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- The Basics -->
+    <groupId>com.mriss.mriss-parent</groupId>
+    <artifactId>products</artifactId>
+    <version>3.7.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <!-- <dependencies>...</dependencies> -->
+    <parent>
+        <groupId>com.mriss</groupId>
+        <artifactId>mriss-parent</artifactId>
+        <version>3.6.2</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <!-- Import dependency management from Spring Boot -->
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <!-- <modules> -->
+    <!-- </modules> -->
+    <properties>
+        <jenkins.view>${project.artifactId}</jenkins.view>
+        <spring-boot.version>2.3.4.RELEASE</spring-boot.version>
+    </properties>
+
+
+    <!-- Build Settings -->
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring-boot.version}</version>
+                    <executions>
+                        <execution>
+                            <id>repackage</id>
+                            <goals>
+                                <goal>repackage</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <mainClass>${start-class}</mainClass>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+    <!-- <reporting>...</reporting> -->
+
+    <!-- More Project Information -->
+    <name>Products</name>
+    <description>Products Parent Project</description>
+    <!-- <url>...</url> -->
+    <!-- <inceptionYear>...</inceptionYear> -->
+    <!-- <licenses>...</licenses> -->
+    <!-- <organization>...</organization> -->
+    <!-- <developers>...</developers> -->
+    <!-- <contributors>...</contributors> -->
+
+    <!-- Environment Settings -->
+    <!-- <issueManagement>...</issueManagement> -->
+    <!-- <ciManagement>...</ciManagement> -->
+    <!-- <mailingLists>...</mailingLists> -->
+    <scm>
+        <connection>scm:git:${source.code.server}/${source.project}.git</connection>
+        <developerConnection>scm:git:${source.code.server}/${source.project}.git</developerConnection>
+        <url>${source.code.server}/${source.project}/tree/master</url>
+        <tag>HEAD</tag>
+    </scm>
+    <!-- <prerequisites>...</prerequisites> -->
+    <repositories>
+        <repository>
+            <id>pdf-plugin</id>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <url>https://dl.bintray.com/tommy/maven</url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>pdf-plugin-maven-plugin</id>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <url>https://dl.bintray.com/tommy/maven</url>
+        </pluginRepository>
+    </pluginRepositories>
+    <!-- <distributionManagement>...</distributionManagement> -->
+    <profiles>
+        <profile>
+            <id>deployment</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>copy-readme-md</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>.</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>src/site/markdown</directory>
+                                            <includes>
+                                                <include>README.md</include>
+                                            </includes>
+                                            <targetPath>.</targetPath>
+                                            <filtering>true</filtering>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-scm-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>commit-readme-md</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>checkin</goal>
+                                </goals>
+                                <configuration>
+                                    <basedir>${basedir}</basedir>
+                                    <includes>README.md</includes>
+                                    <message>Auto-generated README.md [skip jenkins]</message>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>product-release-deployment</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <doxia.skin.version>1.8</doxia.skin.version>
+                <doxia.tools.version>1.8</doxia.tools.version>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-changes-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>generate-list-of-issues</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>github-text-list</goal>
+                                </goals>
+                                <configuration>
+                                    <includeOpenIssues>false</includeOpenIssues>
+                                    <onlyMilestoneIssues>true</onlyMilestoneIssues>
+                                    <columnNames>Id,Type,Summary,Assignee,Reporter,Updated</columnNames>
+                                    <failOnError>false</failOnError>
+                                    <githubAPIServerId>github.com</githubAPIServerId>
+                                    <personalToken>${github.personal.token}</personalToken>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>copy-readme-md</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>.</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>src/site</directory>
+                                            <includes>
+                                                <include>markdown/**</include>
+                                            </includes>
+                                            <targetPath>${project.build.directory}/pdf-resources</targetPath>
+                                            <filtering>true</filtering>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- <plugin> -->
+                    <!-- <groupId>org.apache.maven.plugins</groupId> -->
+                    <!-- <artifactId>maven-pdf-plugin</artifactId> -->
+                    <!-- <executions> -->
+                    <!-- <execution> -->
+                    <!-- <id>pdf-generation</id> -->
+                    <!-- <phase>prepare-package</phase> -->
+                    <!-- <goals> -->
+                    <!-- <goal>pdf</goal> -->
+                    <!-- </goals> -->
+                    <!-- <configuration> -->
+                    <!-- <siteDirectory>${project.build.directory}/pdf-resources</siteDirectory> -->
+                    <!-- <outputDirectory>${project.build.directory}/site/pdf</outputDirectory> -->
+                    <!-- <workingDirectory>${project.build.directory}/site/pdf</workingDirectory> -->
+                    <!-- <aggregate>false</aggregate> -->
+                    <!-- <includeReports>false</includeReports> -->
+                    <!-- <implementation>itext</implementation> -->
+                    <!-- </configuration> -->
+                    <!-- </execution> -->
+                    <!-- </executions> -->
+                    <!-- </plugin> -->
+                    <plugin>
+                        <groupId>se.natusoft.tools.doc.markdowndoc</groupId>
+                        <artifactId>markdowndoc-maven-plugin</artifactId>
+                        <version>2.1.4</version>
+                        <executions>
+                            <execution>
+                                <id>pdf-generation</id>
+                                <goals>
+                                    <goal>doc</goal>
+                                </goals>
+                                <phase>prepare-package</phase>
+                                <configuration>
+                                    <generatorOptions>
+                                        <generator>pdf</generator>
+                                        <inputPaths>
+                                            target/pdf-resources/markdown/README.md
+                                        </inputPaths>
+                                    </generatorOptions>
+                                    <pdfGeneratorOptions>
+                                        <resultFile>${project.build.directory}/site/pdf/README.pdf</resultFile>
+                                    </pdfGeneratorOptions>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-readme</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>attach-artifact</goal>
+                                </goals>
+                                <configuration>
+                                    <artifacts>
+                                        <artifact>
+                                            <file>${basedir}/target/site/pdf/README.pdf</file>
+                                            <type>pdf</type>
+                                            <classifier>readme</classifier>
+                                        </artifact>
+                                    </artifacts>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-scm-publish-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>publish-artifact-to-github</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>publish-scm</goal>
+                                </goals>
+                                <configuration>
+                                    <serverId>github.com</serverId>
+                                    <checkinComment>Publishing artifact for version ${project.version} [skip jenkins]</checkinComment>
+                                    <pubScmUrl>scm:git:https://github.com/MRISS-Projects/maven-repo</pubScmUrl>
+                                    <content>${project.build.directory}/maven-repo</content>
+                                    <checkoutDirectory>/tmp/artifact-deploy-checkout</checkoutDirectory>
+                                    <skipDeletedFiles>true</skipDeletedFiles>
+                                    <tryUpdate>true</tryUpdate>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
