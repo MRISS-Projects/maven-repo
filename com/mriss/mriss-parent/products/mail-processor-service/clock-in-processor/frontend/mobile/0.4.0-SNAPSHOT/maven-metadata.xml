@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata modelVersion="1.1.0">
+  <groupId>com.mriss.mriss-parent.products.mail-processor-service.clock-in-processor.frontend</groupId>
+  <artifactId>mobile</artifactId>
+  <version>0.4.0-SNAPSHOT</version>
+  <versioning>
+    <snapshot>
+      <timestamp>20201009.192304</timestamp>
+      <buildNumber>1</buildNumber>
+    </snapshot>
+    <lastUpdated>20201009192304</lastUpdated>
+    <snapshotVersions>
+      <snapshotVersion>
+        <extension>jar</extension>
+        <value>0.4.0-20201009.192304-1</value>
+        <updated>20201009192304</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <extension>pom</extension>
+        <value>0.4.0-20201009.192304-1</value>
+        <updated>20201009192304</updated>
+      </snapshotVersion>
+    </snapshotVersions>
+  </versioning>
+</metadata>
