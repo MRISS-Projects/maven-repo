@@ -1,0 +1,42 @@
+name: Publish Maven Artifacts to GitHub Packages
+
+# Runs automatically on every push to main so that newly committed artifacts
+# are immediately available via GitHub Packages.
+# Can also be triggered manually from the "Actions" tab.
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  publish:
+    name: Publish artifacts
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read   # needed to check out the repository
+      packages: write  # needed to push to GitHub Packages
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 11 and configure GitHub Packages server
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          # The action writes a ~/.m2/settings.xml that maps the "github" server
+          # ID to the two environment variables below.
+          server-id: github
+          server-username: GITHUB_ACTOR
+          server-password: GITHUB_TOKEN
+
+      - name: Publish all artifacts to GitHub Packages
+        run: |
+          chmod +x .github/scripts/publish-artifacts.sh
+          .github/scripts/publish-artifacts.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
