@@ -18,6 +18,8 @@ https://maven.pkg.github.com/MRISS-Projects/maven-repo
 4. [Add the repository to your project POM](#4-add-the-repository-to-your-project-pom)
 5. [Available Artifacts](#5-available-artifacts)
 6. [Publishing new artifacts](#6-publishing-new-artifacts)
+   - [6.1 Configure deployment in your project POM](#61-configure-deployment-in-your-project-pom)
+   - [6.2 Add artifact files manually](#62-add-artifact-files-manually)
 
 ---
 
@@ -26,7 +28,7 @@ https://maven.pkg.github.com/MRISS-Projects/maven-repo
 GitHub Packages requires authentication even for **read** access to packages belonging to a public repository.  You need:
 
 * A GitHub account.
-* A **Personal Access Token (PAT)** with at least the `read:packages` scope.  
+* A **Personal Access Token (PAT)** with at least the `read:packages` scope for consuming artifacts, or `write:packages` (which includes `read:packages`) if you also need to publish artifacts.  
   Create one at **Settings → Developer settings → Personal access tokens**.
 
 ---
@@ -44,7 +46,7 @@ Add the server credentials to your **`~/.m2/settings.xml`** (never commit creden
     <server>
       <id>github-mriss</id>
       <username>YOUR_GITHUB_USERNAME</username>
-      <!-- Use a PAT with read:packages scope, or ${env.GITHUB_TOKEN} in CI -->
+      <!-- Use a PAT with read:packages scope (or write:packages to also publish), or ${env.GITHUB_TOKEN} in CI -->
       <password>YOUR_PERSONAL_ACCESS_TOKEN</password>
     </server>
   </servers>
@@ -204,7 +206,33 @@ All release versions currently published to GitHub Packages are listed below.
 
 ## 6. Publishing new artifacts
 
-Add your artifact files (`.jar`, `.pom`, etc.) to this repository following the standard Maven repository layout:
+The deployment target is the **same GitHub Packages URL** used to consume artifacts:
+
+```
+https://maven.pkg.github.com/MRISS-Projects/maven-repo
+```
+
+### 6.1 Configure deployment in your project POM
+
+Add a `<distributionManagement>` section to your project's `pom.xml` pointing to this repository:
+
+```xml
+<distributionManagement>
+  <repository>
+    <id>github-mriss</id>
+    <name>MRISS GitHub Packages</name>
+    <url>https://maven.pkg.github.com/MRISS-Projects/maven-repo</url>
+  </repository>
+</distributionManagement>
+```
+
+> The `<id>` value (`github-mriss`) must match the `<server><id>` in your `~/.m2/settings.xml`, and the PAT configured there must have the `write:packages` scope.
+
+Run `mvn deploy` to publish the artifact to GitHub Packages.
+
+### 6.2 Add artifact files manually
+
+Alternatively, add your artifact files (`.jar`, `.pom`, etc.) to this repository following the standard Maven repository layout:
 
 ```
 <groupId path>/<artifactId>/<version>/<artifactId>-<version>.jar
