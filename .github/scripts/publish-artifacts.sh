@@ -27,6 +27,7 @@ echo "=================================================="
 
 DEPLOYED=0
 SKIPPED=0
+ALREADY_EXISTS=0
 FAILED=0
 
 # Walk every .pom file in the repository (relative to the repo root).
@@ -51,6 +52,23 @@ while IFS= read -r pomFile; do
     groupId=$(echo "${groupPath}" | tr '/' '.')
 
     echo ""
+    echo "--- Checking: ${groupId}:${artifactId}:${version}"
+
+    # Check whether this artifact version already exists in GitHub Packages.
+    # GitHub Packages Maven registry is immutable: re-uploading an existing
+    # version returns HTTP 422 "Unprocessable Entity".  Checking first makes
+    # the workflow idempotent so it can be safely re-run (e.g. after a
+    # cancelled previous run that had already published some artifacts).
+    pomCheckUrl="${REPO_URL}/${groupPath}/${artifactId}/${version}/${baseFile}.pom"
+    httpStatus=$(curl -s -o /dev/null -w "%{http_code}" \
+        -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+        "${pomCheckUrl}")
+    if [ "${httpStatus}" = "200" ]; then
+        echo "SKIP: ${groupId}:${artifactId}:${version} already exists in GitHub Packages."
+        ALREADY_EXISTS=$(( ALREADY_EXISTS + 1 ))
+        continue
+    fi
+
     echo "--- Deploying: ${groupId}:${artifactId}:${version}"
 
     mainJar="${dir}/${baseFile}.jar"
@@ -111,9 +129,10 @@ done < <(find . -name "*.pom" -not -path "./.git/*" | sort)
 echo ""
 echo "=================================================="
 echo " Done."
-echo "   Deployed : ${DEPLOYED}"
-echo "   Skipped  : ${SKIPPED}  (timestamp-based SNAPSHOTs)"
-echo "   Failed   : ${FAILED}"
+echo "   Deployed      : ${DEPLOYED}"
+echo "   Already exists: ${ALREADY_EXISTS}  (skipped – version already in GitHub Packages)"
+echo "   Skipped       : ${SKIPPED}  (timestamp-based SNAPSHOTs)"
+echo "   Failed        : ${FAILED}"
 echo "=================================================="
 
 if [ "${FAILED}" -gt 0 ]; then
