@@ -27,6 +27,7 @@ echo "=================================================="
 
 DEPLOYED=0
 SKIPPED=0
+SKIPPED_UPPERCASE=0
 ALREADY_EXISTS=0
 FAILED=0
 
@@ -54,6 +55,14 @@ while IFS= read -r pomFile; do
     echo ""
     echo "--- Checking: ${groupId}:${artifactId}:${version}"
 
+    # GitHub Packages Maven registry normalizes all package names to lowercase.
+    # Build the existence-check URL using lowercase coordinates so that artifacts
+    # already published (stored under lowercase names) are properly detected,
+    # regardless of the case used in the on-disk directory layout.
+    lcGroupPath=$(echo "${groupPath}" | tr '[:upper:]' '[:lower:]')
+    lcArtifactId=$(echo "${artifactId}" | tr '[:upper:]' '[:lower:]')
+    lcBaseFile=$(echo "${baseFile}" | tr '[:upper:]' '[:lower:]')
+
     # Check whether this artifact version already exists in GitHub Packages.
     # GitHub Packages Maven registry is immutable: re-uploading an existing
     # version returns HTTP 409 "Conflict" or HTTP 422 "Unprocessable Entity".
@@ -61,7 +70,7 @@ while IFS= read -r pomFile; do
     # (e.g. after a cancelled previous run that had already published some
     # artifacts).  Any 409/422 that slips through the pre-check is also handled
     # gracefully in the deploy step below.
-    pomCheckUrl="${REPO_URL}/${groupPath}/${artifactId}/${version}/${baseFile}.pom"
+    pomCheckUrl="${REPO_URL}/${lcGroupPath}/${lcArtifactId}/${version}/${lcBaseFile}.pom"
     httpStatus=$(curl -s -o /dev/null -w "%{http_code}" \
         --connect-timeout 10 \
         --max-time 30 \
@@ -73,6 +82,21 @@ while IFS= read -r pomFile; do
         continue
     elif [ "${httpStatus}" != "404" ] && [ "${httpStatus}" != "000" ]; then
         echo "  INFO: Existence check returned HTTP ${httpStatus} for ${groupId}:${artifactId}:${version} – proceeding with deploy."
+    fi
+
+    # GitHub Packages Maven registry only supports lowercase package names.
+    # Artifacts whose groupId path or artifactId contain uppercase letters cannot
+    # be published and will always receive HTTP 422 (Unprocessable Entity).
+    # Note: only groupId and artifactId are checked; GitHub Packages normalises
+    # the package name (groupId + artifactId) to lowercase but treats the
+    # version string as case-sensitive, so uppercase in version numbers (e.g.
+    # -RC1, -ALPHA) does not need to be handled here.
+    # Skip them early with a clear message rather than invoking Maven and
+    # misinterpreting the 422 as an "already exists" conflict.
+    if echo "${groupPath}/${artifactId}" | grep -q '[A-Z]'; then
+        echo "INFO: ${groupId}:${artifactId}:${version} – GitHub Packages requires all-lowercase coordinates; skipping."
+        SKIPPED_UPPERCASE=$(( SKIPPED_UPPERCASE + 1 ))
+        continue
     fi
 
     echo "--- Deploying: ${groupId}:${artifactId}:${version}"
@@ -163,6 +187,7 @@ echo " Done."
 echo "   Deployed      : ${DEPLOYED}"
 echo "   Already exists: ${ALREADY_EXISTS}  (skipped – version already in GitHub Packages)"
 echo "   Skipped       : ${SKIPPED}  (timestamp-based SNAPSHOTs)"
+echo "   Skipped (case): ${SKIPPED_UPPERCASE}  (uppercase coordinates not supported by GitHub Packages)"
 echo "   Failed        : ${FAILED}"
 echo "=================================================="
 
