@@ -73,9 +73,16 @@ while IFS= read -r pomFile; do
 
     echo "--- Deploying: ${groupId}:${artifactId}:${version}"
 
-    mainJar="${dir}/${baseFile}.jar"
     sourcesJar="${dir}/${baseFile}-sources.jar"
     javadocJar="${dir}/${baseFile}-javadoc.jar"
+
+    # Determine the packaging type declared in the POM.  When the <packaging>
+    # element is absent the Maven default is 'jar'.
+    # maven-plugin packaging also produces a .jar file on disk (not .maven-plugin).
+    # Lines starting with an XML comment are filtered out to avoid false matches.
+    packaging=$(grep -v '<!--' "${pomFile}" | sed -n 's|.*<packaging>\([^<]*\)</packaging>.*|\1|p' | head -1)
+    packaging="${packaging:-jar}"
+    [ "${packaging}" = "maven-plugin" ] && packaging="jar"
 
     # Build the base argument array
     deployArgs=(
@@ -87,11 +94,19 @@ while IFS= read -r pomFile; do
         -Dgpg.skip=true
     )
 
-    if [ -f "${mainJar}" ]; then
-        deployArgs+=( "-Dfile=${mainJar}" -Dpackaging=jar )
-    else
-        # POM-only artifact (packaging=pom)
+    if [ "${packaging}" = "pom" ]; then
+        # POM-only artifact (e.g. parent/BOM pom)
         deployArgs+=( "-Dfile=${pomFile}" -Dpackaging=pom )
+    else
+        mainArtifact="${dir}/${baseFile}.${packaging}"
+        if [ -f "${mainArtifact}" ]; then
+            deployArgs+=( "-Dfile=${mainArtifact}" "-Dpackaging=${packaging}" )
+        else
+            # No binary artifact found for the declared packaging type.
+            # Fall back to POM-only so Maven at least records the coordinates.
+            echo "  WARNING: expected ${baseFile}.${packaging} not found; deploying as POM-only."
+            deployArgs+=( "-Dfile=${pomFile}" -Dpackaging=pom )
+        fi
     fi
 
     # Attach sources / javadoc as additional artifacts when present
@@ -122,11 +137,10 @@ while IFS= read -r pomFile; do
     # Capture Maven output so we can inspect it for known "already exists"
     # status codes (409 Conflict / 422 Unprocessable Entity) that GitHub
     # Packages returns when an immutable artifact version is re-uploaded.
-    # NOTE: The grep pattern below depends on Maven's English-language error
-    # message format ("status code: NNN"), which has been stable across
-    # maven-deploy-plugin versions (tested with 3.x).
+    # LC_ALL=C ensures English-language Maven output regardless of runner locale
+    # so that the grep pattern below matches reliably.
     tmpOut=$(mktemp) || { echo "ERROR: Failed to create temp file"; exit 1; }
-    if mvn "${deployArgs[@]}" 2>&1 | tee "${tmpOut}"; then
+    if LC_ALL=C mvn "${deployArgs[@]}" 2>&1 | tee "${tmpOut}"; then
         DEPLOYED=$(( DEPLOYED + 1 ))
     elif grep -qE "status code: (409|422)" "${tmpOut}"; then
         echo "INFO: ${groupId}:${artifactId}:${version} already exists in GitHub Packages (conflict detected during upload) – skipping."
