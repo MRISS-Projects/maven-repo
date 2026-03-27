@@ -63,12 +63,16 @@ while IFS= read -r pomFile; do
     # gracefully in the deploy step below.
     pomCheckUrl="${REPO_URL}/${groupPath}/${artifactId}/${version}/${baseFile}.pom"
     httpStatus=$(curl -s -o /dev/null -w "%{http_code}" \
+        --connect-timeout 10 \
+        --max-time 30 \
         -H "Authorization: Bearer ${GITHUB_TOKEN}" \
         "${pomCheckUrl}")
     if [ "${httpStatus}" = "200" ]; then
         echo "SKIP: ${groupId}:${artifactId}:${version} already exists in GitHub Packages."
         ALREADY_EXISTS=$(( ALREADY_EXISTS + 1 ))
         continue
+    elif [ "${httpStatus}" != "404" ] && [ "${httpStatus}" != "000" ]; then
+        echo "  INFO: Existence check returned HTTP ${httpStatus} for ${groupId}:${artifactId}:${version} – proceeding with deploy."
     fi
 
     echo "--- Deploying: ${groupId}:${artifactId}:${version}"
