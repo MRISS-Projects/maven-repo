@@ -67,8 +67,8 @@ while IFS= read -r pomFile; do
         --max-time 30 \
         -H "Authorization: Bearer ${GITHUB_TOKEN}" \
         "${pomCheckUrl}")
-    if [ "${httpStatus}" = "200" ]; then
-        echo "SKIP: ${groupId}:${artifactId}:${version} already exists in GitHub Packages."
+    if [ "${httpStatus}" = "200" ] || [ "${httpStatus}" = "302" ]; then
+        echo "SKIP: ${groupId}:${artifactId}:${version} already exists in GitHub Packages (HTTP ${httpStatus})."
         ALREADY_EXISTS=$(( ALREADY_EXISTS + 1 ))
         continue
     elif [ "${httpStatus}" != "404" ] && [ "${httpStatus}" != "000" ]; then
