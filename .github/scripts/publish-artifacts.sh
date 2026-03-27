@@ -56,9 +56,11 @@ while IFS= read -r pomFile; do
 
     # Check whether this artifact version already exists in GitHub Packages.
     # GitHub Packages Maven registry is immutable: re-uploading an existing
-    # version returns HTTP 422 "Unprocessable Entity".  Checking first makes
-    # the workflow idempotent so it can be safely re-run (e.g. after a
-    # cancelled previous run that had already published some artifacts).
+    # version returns HTTP 409 "Conflict" or HTTP 422 "Unprocessable Entity".
+    # Checking first makes the workflow idempotent so it can be safely re-run
+    # (e.g. after a cancelled previous run that had already published some
+    # artifacts).  Any 409/422 that slips through the pre-check is also handled
+    # gracefully in the deploy step below.
     pomCheckUrl="${REPO_URL}/${groupPath}/${artifactId}/${version}/${baseFile}.pom"
     httpStatus=$(curl -s -o /dev/null -w "%{http_code}" \
         -H "Authorization: Bearer ${GITHUB_TOKEN}" \
@@ -71,9 +73,16 @@ while IFS= read -r pomFile; do
 
     echo "--- Deploying: ${groupId}:${artifactId}:${version}"
 
-    mainJar="${dir}/${baseFile}.jar"
     sourcesJar="${dir}/${baseFile}-sources.jar"
     javadocJar="${dir}/${baseFile}-javadoc.jar"
+
+    # Determine the packaging type declared in the POM.  When the <packaging>
+    # element is absent the Maven default is 'jar'.
+    # maven-plugin packaging also produces a .jar file on disk (not .maven-plugin).
+    # Lines starting with an XML comment are filtered out to avoid false matches.
+    packaging=$(grep -v '<!--' "${pomFile}" | sed -n 's|.*<packaging>\([^<]*\)</packaging>.*|\1|p' | head -1)
+    packaging="${packaging:-jar}"
+    [ "${packaging}" = "maven-plugin" ] && packaging="jar"
 
     # Build the base argument array
     deployArgs=(
@@ -85,11 +94,19 @@ while IFS= read -r pomFile; do
         -Dgpg.skip=true
     )
 
-    if [ -f "${mainJar}" ]; then
-        deployArgs+=( "-Dfile=${mainJar}" -Dpackaging=jar )
-    else
-        # POM-only artifact (packaging=pom)
+    if [ "${packaging}" = "pom" ]; then
+        # POM-only artifact (e.g. parent/BOM pom)
         deployArgs+=( "-Dfile=${pomFile}" -Dpackaging=pom )
+    else
+        mainArtifact="${dir}/${baseFile}.${packaging}"
+        if [ -f "${mainArtifact}" ]; then
+            deployArgs+=( "-Dfile=${mainArtifact}" "-Dpackaging=${packaging}" )
+        else
+            # No binary artifact found for the declared packaging type.
+            # Fall back to POM-only so Maven at least records the coordinates.
+            echo "  WARNING: expected ${baseFile}.${packaging} not found; deploying as POM-only."
+            deployArgs+=( "-Dfile=${pomFile}" -Dpackaging=pom )
+        fi
     fi
 
     # Attach sources / javadoc as additional artifacts when present
@@ -117,12 +134,22 @@ while IFS= read -r pomFile; do
         deployArgs+=( "-Dfiles=${filesStr}" "-Dclassifiers=${classifiersStr}" "-Dtypes=${typesStr}" )
     fi
 
-    if mvn "${deployArgs[@]}"; then
+    # Capture Maven output so we can inspect it for known "already exists"
+    # status codes (409 Conflict / 422 Unprocessable Entity) that GitHub
+    # Packages returns when an immutable artifact version is re-uploaded.
+    # LC_ALL=C ensures English-language Maven output regardless of runner locale
+    # so that the grep pattern below matches reliably.
+    tmpOut=$(mktemp) || { echo "ERROR: Failed to create temp file"; exit 1; }
+    if LC_ALL=C mvn "${deployArgs[@]}" 2>&1 | tee "${tmpOut}"; then
         DEPLOYED=$(( DEPLOYED + 1 ))
+    elif grep -qE "status code: (409|422)" "${tmpOut}"; then
+        echo "INFO: ${groupId}:${artifactId}:${version} already exists in GitHub Packages (conflict detected during upload) – skipping."
+        ALREADY_EXISTS=$(( ALREADY_EXISTS + 1 ))
     else
         echo "WARNING: Failed to deploy ${groupId}:${artifactId}:${version} – continuing."
         FAILED=$(( FAILED + 1 ))
     fi
+    rm -f "${tmpOut}"
 
 done < <(find . -name "*.pom" -not -path "./.git/*" | sort)
 
