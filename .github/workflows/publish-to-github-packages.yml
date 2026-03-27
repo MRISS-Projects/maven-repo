@@ -37,6 +37,8 @@ jobs:
           chmod +x .github/scripts/publish-artifacts.sh
           .github/scripts/publish-artifacts.sh
         env:
+          # GITHUB_ACTOR and GITHUB_REPOSITORY are default environment variables
+          # automatically injected by GitHub Actions and do not need to be set here.
+          # GITHUB_TOKEN must be explicitly mapped from the built-in secret so that
+          # the token with packages:write permission is available to Maven.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_REPOSITORY: ${{ github.repository }}

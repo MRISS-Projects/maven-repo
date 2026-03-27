@@ -1,10 +1,16 @@
 #!/usr/bin/env bash
 # Publishes every release artifact in this repository to GitHub Packages.
 #
-# Requirements (set by the calling workflow):
-#   GITHUB_TOKEN       – token with packages:write permission
-#   GITHUB_ACTOR       – username that owns the token
-#   GITHUB_REPOSITORY  – owner/repo  (e.g. "MRISS-Projects/maven-repo")
+# Environment variables used by this script:
+#   GITHUB_TOKEN       – token with packages:write permission.
+#                        Must be explicitly mapped in the calling workflow step's
+#                        env: section (e.g. GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}).
+#   GITHUB_ACTOR       – GitHub username that owns the token.
+#                        Automatically injected by GitHub Actions as a default
+#                        environment variable; no explicit mapping required.
+#   GITHUB_REPOSITORY  – owner/repo  (e.g. "MRISS-Projects/maven-repo").
+#                        Automatically injected by GitHub Actions as a default
+#                        environment variable; no explicit mapping required.
 #
 # SNAPSHOT artifacts that are stored with a timestamp-based filename
 # (e.g. artifact-1.0-20231201.123456-1.jar) are intentionally skipped.
