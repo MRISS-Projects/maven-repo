@@ -56,9 +56,11 @@ while IFS= read -r pomFile; do
 
     # Check whether this artifact version already exists in GitHub Packages.
     # GitHub Packages Maven registry is immutable: re-uploading an existing
-    # version returns HTTP 422 "Unprocessable Entity".  Checking first makes
-    # the workflow idempotent so it can be safely re-run (e.g. after a
-    # cancelled previous run that had already published some artifacts).
+    # version returns HTTP 409 "Conflict" or HTTP 422 "Unprocessable Entity".
+    # Checking first makes the workflow idempotent so it can be safely re-run
+    # (e.g. after a cancelled previous run that had already published some
+    # artifacts).  Any 409/422 that slips through the pre-check is also handled
+    # gracefully in the deploy step below.
     pomCheckUrl="${REPO_URL}/${groupPath}/${artifactId}/${version}/${baseFile}.pom"
     httpStatus=$(curl -s -o /dev/null -w "%{http_code}" \
         -H "Authorization: Bearer ${GITHUB_TOKEN}" \
@@ -117,12 +119,23 @@ while IFS= read -r pomFile; do
         deployArgs+=( "-Dfiles=${filesStr}" "-Dclassifiers=${classifiersStr}" "-Dtypes=${typesStr}" )
     fi
 
-    if mvn "${deployArgs[@]}"; then
+    # Capture Maven output so we can inspect it for known "already exists"
+    # status codes (409 Conflict / 422 Unprocessable Entity) that GitHub
+    # Packages returns when an immutable artifact version is re-uploaded.
+    # NOTE: The grep pattern below depends on Maven's English-language error
+    # message format ("status code: NNN"), which has been stable across
+    # maven-deploy-plugin versions (tested with 3.x).
+    tmpOut=$(mktemp) || { echo "ERROR: Failed to create temp file"; exit 1; }
+    if mvn "${deployArgs[@]}" 2>&1 | tee "${tmpOut}"; then
         DEPLOYED=$(( DEPLOYED + 1 ))
+    elif grep -qE "status code: (409|422)" "${tmpOut}"; then
+        echo "INFO: ${groupId}:${artifactId}:${version} already exists in GitHub Packages (conflict detected during upload) – skipping."
+        ALREADY_EXISTS=$(( ALREADY_EXISTS + 1 ))
     else
         echo "WARNING: Failed to deploy ${groupId}:${artifactId}:${version} – continuing."
         FAILED=$(( FAILED + 1 ))
     fi
+    rm -f "${tmpOut}"
 
 done < <(find . -name "*.pom" -not -path "./.git/*" | sort)
 
