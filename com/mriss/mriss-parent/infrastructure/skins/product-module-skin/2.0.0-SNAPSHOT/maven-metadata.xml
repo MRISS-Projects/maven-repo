@@ -3,21 +3,21 @@
   <groupId>com.mriss.mriss-parent.infrastructure.skins</groupId>
   <artifactId>product-module-skin</artifactId>
   <versioning>
-    <lastUpdated>20260331185346</lastUpdated>
+    <lastUpdated>20260331200309</lastUpdated>
     <snapshot>
-      <timestamp>20260331.185346</timestamp>
+      <timestamp>20260331.200309</timestamp>
       <buildNumber>1</buildNumber>
     </snapshot>
     <snapshotVersions>
       <snapshotVersion>
         <extension>jar</extension>
-        <value>2.0.0-20260331.185346-1</value>
-        <updated>20260331185346</updated>
+        <value>2.0.0-20260331.200309-1</value>
+        <updated>20260331200309</updated>
       </snapshotVersion>
       <snapshotVersion>
         <extension>pom</extension>
-        <value>2.0.0-20260331.185346-1</value>
-        <updated>20260331185346</updated>
+        <value>2.0.0-20260331.200309-1</value>
+        <updated>20260331200309</updated>
       </snapshotVersion>
     </snapshotVersions>
   </versioning>
